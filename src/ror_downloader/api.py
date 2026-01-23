@@ -8,7 +8,7 @@ import logging
 import zipfile
 from functools import lru_cache
 from pathlib import Path
-from typing import Literal, NamedTuple, TypeAlias
+from typing import Literal, NamedTuple, TypeAlias, overload
 
 import zenodo_client
 from pydantic import BaseModel
@@ -27,6 +27,7 @@ __all__ = [
     "Relationship",
     "Status",
     "VersionInfo",
+    "VersionInfoShort",
     "get_organizations",
     "get_version_info",
 ]
@@ -175,6 +176,13 @@ DESCRIPTION_PREFIX = {
 }
 
 
+class VersionInfoShort(NamedTuple):
+    """A version information tuple."""
+
+    version: str
+    url: str
+
+
 class VersionInfo(NamedTuple):
     """A version information tuple."""
 
@@ -183,7 +191,23 @@ class VersionInfo(NamedTuple):
     path: Path
 
 
-def get_version_info(*, force: bool = False, authenticate_zenodo: bool = True) -> VersionInfo:
+# docstr-coverage:excused `overload`
+@overload
+def get_version_info(
+    *, force: bool = ..., authenticate_zenodo: bool = ..., download: Literal[True] = ...
+) -> VersionInfo: ...
+
+
+# docstr-coverage:excused `overload`
+@overload
+def get_version_info(
+    *, force: bool = ..., authenticate_zenodo: bool = ..., download: Literal[False] = ...
+) -> VersionInfoShort: ...
+
+
+def get_version_info(
+    *, force: bool = False, authenticate_zenodo: bool = True, download: bool = True
+) -> VersionInfo | VersionInfoShort:
     """Ensure the latest ROR record, metadata, and filepath.
 
     :param force: Should the record be downloaded again? This almost
@@ -191,6 +215,7 @@ def get_version_info(*, force: bool = False, authenticate_zenodo: bool = True) -
         a given version
     :param authenticate_zenodo: Should Zenodo be authenticated?
         This isn't required, but can help avoid rate limits
+    :param download: Should the downloaded file be returned?
     :return: A version information tuple
 
     .. note::
@@ -210,8 +235,11 @@ def get_version_info(*, force: bool = False, authenticate_zenodo: bool = True) -
     file_record = response_json["files"][0]
     name = file_record["key"]
     url = file_record["links"]["self"]
-    path = client.download(latest_record_id, name=name, force=force)
-    return VersionInfo(version=version, url=url, path=path)
+    if download:
+        path = client.download(latest_record_id, name=name, force=force)
+        return VersionInfo(version=version, url=url, path=path)
+    else:
+        return VersionInfoShort(version=version, url=url)
 
 
 @lru_cache
@@ -219,7 +247,7 @@ def get_organizations(
     *, force: bool = False, authenticate_zenodo: bool = True, progress: bool = True
 ) -> tuple[VersionInfo, list[Organization]]:
     """Get the latest ROR metadata and records."""
-    status = get_version_info(force=force, authenticate_zenodo=authenticate_zenodo)
+    status = get_version_info(force=force, authenticate_zenodo=authenticate_zenodo, download=True)
     with zipfile.ZipFile(status.path) as zf:
         for zip_info in zf.filelist:
             if zip_info.filename.endswith(".json"):
