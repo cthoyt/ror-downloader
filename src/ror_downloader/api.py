@@ -22,14 +22,14 @@ __all__ = [
     "Location",
     "LocationDetails",
     "Name",
+    "Organization",
     "OrganizationType",
-    "RORStatus",
-    "Record",
     "Relationship",
     "Status",
+    "VersionInfo",
     "get_description",
-    "get_ror_records",
-    "get_ror_status",
+    "get_organizations",
+    "get_version_info",
 ]
 
 logger = logging.getLogger(__name__)
@@ -43,6 +43,7 @@ NAME_REMAPPING = {
     "Hematology\\Oncology Clinic": "Hematology/Oncology Clinic",
 }
 
+#: The type of an organization
 OrganizationType: TypeAlias = Literal[
     "education",
     "facility",
@@ -54,8 +55,6 @@ OrganizationType: TypeAlias = Literal[
     "nonprofit",
     "other",
 ]
-
-_MISSED_ORG_TYPES: set[str] = set()
 
 
 class LocationDetails(BaseModel):
@@ -124,11 +123,12 @@ class Admin(BaseModel):
     last_modified: DateAnnotated
 
 
+#: The status of a record describing an organization
 Status: TypeAlias = Literal["active", "inactive", "withdrawn"]
 
 
-class Record(BaseModel):
-    """A ROR record."""
+class Organization(BaseModel):
+    """A ROR record describing an organization."""
 
     locations: list[Location]
     established: int | None = None
@@ -167,17 +167,18 @@ DESCRIPTION_PREFIX = {
 }
 
 
-def get_description(record: Record) -> str | None:
+def get_description(organization: Organization) -> str | None:
     """Generate a description."""
     description = (
-        f"{DESCRIPTION_PREFIX[record.types[0]]} in {record.locations[0].geonames_details.name}"
+        f"{DESCRIPTION_PREFIX[organization.types[0]]} in "
+        f"{organization.locations[0].geonames_details.name}"
     )
-    if record.established:
-        description += f" established in {record.established}"
+    if organization.established:
+        description += f" established in {organization.established}"
     return description
 
 
-class RORStatus(NamedTuple):
+class VersionInfo(NamedTuple):
     """A version information tuple."""
 
     version: str
@@ -185,7 +186,7 @@ class RORStatus(NamedTuple):
     path: Path
 
 
-def get_ror_status(*, force: bool = False, authenticate_zenodo: bool = True) -> RORStatus:
+def get_version_info(*, force: bool = False, authenticate_zenodo: bool = True) -> VersionInfo:
     """Ensure the latest ROR record, metadata, and filepath.
 
     :param force: Should the record be downloaded again? This almost
@@ -213,22 +214,24 @@ def get_ror_status(*, force: bool = False, authenticate_zenodo: bool = True) -> 
     name = file_record["key"]
     url = file_record["links"]["self"]
     path = client.download(latest_record_id, name=name, force=force)
-    return RORStatus(version=version, url=url, path=path)
+    return VersionInfo(version=version, url=url, path=path)
 
 
 @lru_cache
-def get_ror_records(
-    *, force: bool = False, authenticate_zenodo: bool = True
-) -> tuple[RORStatus, list[Record]]:
+def get_organizations(
+    *, force: bool = False, authenticate_zenodo: bool = True, progress: bool = True
+) -> tuple[VersionInfo, list[Organization]]:
     """Get the latest ROR metadata and records."""
-    status = get_ror_status(force=force, authenticate_zenodo=authenticate_zenodo)
+    status = get_version_info(force=force, authenticate_zenodo=authenticate_zenodo)
     with zipfile.ZipFile(status.path) as zf:
         for zip_info in zf.filelist:
             if zip_info.filename.endswith(".json"):
                 with zf.open(zip_info) as file:
-                    records = [
-                        Record.model_validate(record)
-                        for record in tqdm(json.load(file), unit_scale=True)
+                    organizations = [
+                        Organization.model_validate(organization)
+                        for organization in tqdm(
+                            json.load(file), unit_scale=True, disable=not progress
+                        )
                     ]
-                    return status, records
+                    return status, organizations
     raise FileNotFoundError

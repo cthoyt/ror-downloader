@@ -11,9 +11,9 @@ __all__ = [
 @click.option("--force", is_flag=True)
 def main(force: bool) -> None:
     """CLI for ror_downloader."""
-    from .api import get_ror_records
+    from .api import get_organizations
 
-    get_ror_records(force=force)
+    get_organizations(force=force)
 
 
 if __name__ == "__main__":
