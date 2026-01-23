@@ -27,7 +27,6 @@ __all__ = [
     "Relationship",
     "Status",
     "VersionInfo",
-    "get_description",
     "get_organizations",
     "get_version_info",
 ]
@@ -153,6 +152,15 @@ class Organization(BaseModel):
         primary_name = NAME_REMAPPING.get(primary_name, primary_name)
         return primary_name
 
+    def get_description(self: Organization) -> str | None:
+        """Generate a description."""
+        description = (
+            f"{DESCRIPTION_PREFIX[self.types[0]]} in {self.locations[0].geonames_details.name}"
+        )
+        if self.established:
+            description += f" established in {self.established}"
+        return description
+
 
 DESCRIPTION_PREFIX = {
     "education": "an educational organization",
@@ -165,17 +173,6 @@ DESCRIPTION_PREFIX = {
     "nonprofit": "a nonprofit organization",
     "other": "an organization",
 }
-
-
-def get_description(organization: Organization) -> str | None:
-    """Generate a description."""
-    description = (
-        f"{DESCRIPTION_PREFIX[organization.types[0]]} in "
-        f"{organization.locations[0].geonames_details.name}"
-    )
-    if organization.established:
-        description += f" established in {organization.established}"
-    return description
 
 
 class VersionInfo(NamedTuple):

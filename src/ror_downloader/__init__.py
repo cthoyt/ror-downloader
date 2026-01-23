@@ -13,7 +13,6 @@ from .api import (
     Relationship,
     Status,
     VersionInfo,
-    get_description,
     get_organizations,
     get_version_info,
 )
@@ -31,7 +30,6 @@ __all__ = [
     "Relationship",
     "Status",
     "VersionInfo",
-    "get_description",
     "get_organizations",
     "get_version_info",
 ]
