@@ -8,7 +8,7 @@ import logging
 import zipfile
 from functools import lru_cache
 from pathlib import Path
-from typing import Literal, NamedTuple, TypeAlias, overload
+from typing import Literal, TypeAlias, overload
 
 import zenodo_client
 from pydantic import BaseModel
@@ -176,18 +176,17 @@ DESCRIPTION_PREFIX = {
 }
 
 
-class VersionInfoShort(NamedTuple):
+class VersionInfoShort(BaseModel):
     """A version information tuple."""
 
     version: str
     url: str
+    date: datetime.date | None = None
 
 
-class VersionInfo(NamedTuple):
-    """A version information tuple."""
+class VersionInfo(VersionInfoShort):
+    """A version information tuple with the downloaded path."""
 
-    version: str
-    url: str
     path: Path
 
 
@@ -235,11 +234,12 @@ def get_version_info(
     file_record = response_json["files"][0]
     name = file_record["key"]
     url = file_record["links"]["self"]
+    date = response_json["metadata"].get("publication_date")
     if download:
         path = client.download(latest_record_id, name=name, force=force)
-        return VersionInfo(version=version, url=url, path=path)
+        return VersionInfo(version=version, url=url, path=path, date=date)
     else:
-        return VersionInfoShort(version=version, url=url)
+        return VersionInfoShort(version=version, url=url, date=date)
 
 
 @lru_cache
