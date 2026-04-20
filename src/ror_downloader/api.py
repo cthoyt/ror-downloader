@@ -10,8 +10,10 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal, TypeAlias, overload
 
+import pycountry
 import zenodo_client
 from pydantic import BaseModel
+from pydantic_extra_types.country import CountryAlpha2
 from tqdm.auto import tqdm
 
 __all__ = [
@@ -28,6 +30,7 @@ __all__ = [
     "Status",
     "VersionInfo",
     "VersionInfoShort",
+    "get_organization_to_country",
     "get_organizations",
     "get_version_info",
 ]
@@ -56,13 +59,17 @@ OrganizationType: TypeAlias = Literal[
     "other",
 ]
 
+# hacks in XK for Kosovo, see https://github.com/pycountry/pycountry/issues/109
+pycountry.countries.add_entry(alpha_2="XK", alpha_3="XXK", name="Kosovo", numeric="926")
+
 
 class LocationDetails(BaseModel):
     """The location details slot in the ROR schema."""
 
     continent_code: str
     continent_name: str
-    country_code: str
+    # note, CountryAlpha2 requires hacking in XK for Kosovo, see https://github.com/pycountry/pycountry/issues/109
+    country_code: CountryAlpha2
     country_name: str
     country_subdivision_code: str | None = None
     country_subdivision_name: str | None = None
@@ -133,7 +140,7 @@ class Organization(BaseModel):
     locations: list[Location]
     established: int | None = None
     external_ids: list[ExternalID]
-    id: str
+    id: str  # Starts with https://ror.org
     domains: list[str]
     links: list[Link]
     names: list[Name]
@@ -260,3 +267,14 @@ def get_organizations(
                     ]
                     return status, organizations
     raise FileNotFoundError
+
+
+def get_organization_to_country(*, force: bool = False) -> dict[str, set[CountryAlpha2]]:
+    """Get organization to countries."""
+    _, organizations = get_organizations(force=force)
+    return {
+        organization.id.removeprefix("https://ror.org/"): {
+            location.geonames_details.country_code for location in organization.locations
+        }
+        for organization in organizations
+    }
