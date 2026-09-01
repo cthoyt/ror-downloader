@@ -216,20 +216,19 @@ def get_version_info(
 ) -> VersionInfo | VersionInfoShort:
     """Ensure the latest ROR record, metadata, and filepath.
 
-    :param force: Should the record be downloaded again? This almost
-        never needs to be true, since the data doesn't change for
-        a given version
-    :param authenticate_zenodo: Should Zenodo be authenticated?
-        This isn't required, but can help avoid rate limits
+    :param force: Should the record be downloaded again? This almost never needs to be
+        true, since the data doesn't change for a given version
+    :param authenticate_zenodo: Should Zenodo be authenticated? This isn't required, but
+        can help avoid rate limits
     :param download: Should the downloaded file be returned?
-    :return: A version information tuple
+
+    :returns: A version information tuple
 
     .. note::
 
-        this goes into the ``~/.data/zenodo/6347574`` folder,
-        because 6347574 is the super-record ID, which groups all
-        versions together. this is different from the value
-        for :data:`ROR_ZENODO_RECORD_ID`
+        this goes into the ``~/.data/zenodo/6347574`` folder, because 6347574 is the
+        super-record ID, which groups all versions together. this is different from the
+        value for :data:`ROR_ZENODO_RECORD_ID`
     """
     client = zenodo_client.Zenodo()
     latest_record_id = client.get_latest_record(
