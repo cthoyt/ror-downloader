@@ -60,7 +60,7 @@ OrganizationType: TypeAlias = Literal[
 ]
 
 # hacks in XK for Kosovo, see https://github.com/pycountry/pycountry/issues/109
-pycountry.countries.add_entry(alpha_2="XK", alpha_3="XXK", name="Kosovo", numeric="926")
+pycountry.countries.add_entry(alpha_2="XK", alpha_3="XXK", name="Kosovo", numeric="926")  # type:ignore[no-untyped-call]
 
 
 class LocationDetails(BaseModel):
