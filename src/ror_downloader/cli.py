@@ -28,7 +28,8 @@ def version() -> None:
 
 @main.command()
 @click.option("--force", is_flag=True)
-def download(force: bool) -> None:
+def cache(force: bool) -> None:
+    """Download, parse, and cache ROR."""
     from .api import get_organizations
 
     get_organizations(force=force)

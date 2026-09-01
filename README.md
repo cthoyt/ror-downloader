@@ -49,12 +49,11 @@ The `ror_downloader` command line tool is automatically installed. It can be
 used to pre-cache the latest ROR data.
 
 ```console
-$ ror_downloader
+$ ror_downloader cache
 ```
 
 ## 🚀 Installation
 
-<!-- Uncomment this section after your first ``tox -e finish``
 The most recent release can be installed from
 [PyPI](https://pypi.org/project/ror_downloader/) with uv:
 
@@ -67,7 +66,6 @@ or with pip:
 ```console
 $ python3 -m pip install ror_downloader
 ```
--->
 
 The most recent code and data can be installed directly from GitHub with uv:
 
