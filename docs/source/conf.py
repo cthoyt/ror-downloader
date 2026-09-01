@@ -20,11 +20,11 @@ sys.path.insert(0, os.path.abspath("../../src"))
 # -- Project information -----------------------------------------------------
 
 project = "ror_downloader"
-copyright = f"{date.today().year}, Charles Tapley Hoyt"
+copyright = f"{date.today().year}, Charles Tapley Hoyt"  # noqa:DTZ011
 author = "Charles Tapley Hoyt"
 
 # The full version, including alpha/beta/rc tags.
-release = "0.0.6-dev"
+release = "0.1.0-dev"
 
 # The short X.Y version.
 parsed_version = re.match(
