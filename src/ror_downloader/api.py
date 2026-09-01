@@ -36,7 +36,7 @@ __all__ = [
 ]
 
 logger = logging.getLogger(__name__)
-ROR_ZENODO_RECORD_ID = "17953395"
+ROR_ZENODO_RECORD_ID = "21773148"
 
 NAME_REMAPPING = {
     "'s-Hertogenbosch": "Den Bosch",  # SMH Netherlands, why u gotta be like this
@@ -46,7 +46,7 @@ NAME_REMAPPING = {
     "Hematology\\Oncology Clinic": "Hematology/Oncology Clinic",
 }
 
-#: The type of an organization
+#: The type of organization
 OrganizationType: TypeAlias = Literal[
     "education",
     "facility",
