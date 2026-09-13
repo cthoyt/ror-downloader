@@ -3,7 +3,7 @@ requires = ["uv_build>=0.9.6,<1.0"]
 build-backend = "uv_build"
 
 [project]
-name = "ror_downloader"
+name = "ror-downloader"
 version = "0.1.1-dev"
 description = "Download and cache the Research Organization Registry (ROR)"
 readme = "README.md"
@@ -125,6 +125,7 @@ Funding = "https://github.com/sponsors/cthoyt"
 
 [project.scripts]
 ror_downloader = "ror_downloader.cli:main"
+ror-downloader = "ror_downloader.cli:main"
 
 [tool.cruft]
 skip = [

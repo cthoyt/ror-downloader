@@ -45,11 +45,11 @@ records = get_organizations()
 
 ### Command Line Interface
 
-The `ror_downloader` command line tool is automatically installed. It can be
+The `ror-downloader` command line tool is automatically installed. It can be
 used to pre-cache the latest ROR data.
 
 ```console
-$ ror_downloader cache
+$ ror-downloader cache
 ```
 
 ## 🚀 Installation
